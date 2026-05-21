@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Catalogue | Mode & Robes</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    /* Vos styles actuels (inchangés) */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, 'Segoe UI', 'Helvetica Neue', sans-serif;
+    }
+    body {
+      background: #f5f7fb;
+      color: #1e2a3e;
+      padding-bottom: 2rem;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+    header {
+      background: white;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(10px);
+      background: rgba(255,255,255,0.95);
+    }
+    header .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+    }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      background: linear-gradient(135deg, #2b6e4f, #1e4a76);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+    .panier-icone {
+      position: relative;
+      cursor: pointer;
+      font-size: 1.6rem;
+      color: #2c3e50;
+      transition: transform 0.2s;
+    }
+    .panier-icone:hover { transform: scale(1.05); }
+    #panier-compteur {
+      position: absolute;
+      top: -8px;
+      right: -12px;
+      background: #e67e22;
+      color: white;
+      font-size: 0.7rem;
+      font-weight: bold;
+      border-radius: 50%;
+      padding: 0.2rem 0.5rem;
+      min-width: 20px;
+      text-align: center;
+    }
+    .produits-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+    @media (min-width: 640px) { .produits-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1024px) { .produits-grid { grid-template-columns: repeat(3, 1fr); } }
+    .produit-card {
+      background: white;
+      border-radius: 1.5rem;
+      overflow: hidden;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+    }
+    .produit-card:hover { transform: translateY(-4px); box-shadow: 0 16px 28px rgba(0,0,0,0.1); }
+    .produit-image {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      background: #eef2f5;
+      display: block;
+    }
+    .produit-info { padding: 1rem 1rem 0.5rem; }
+    .produit-nom { font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .produit-description { font-size: 0.85rem; color: #5a6e7a; margin-bottom: 0.75rem; line-height: 1.4; }
+    .produit-prix { font-size: 1.3rem; font-weight: 700; color: #2c6e4f; margin: 0.5rem 0; }
+    .btn-ajouter {
+      background: #1e4a76;
+      border: none;
+      color: white;
+      padding: 0.75rem;
+      width: calc(100% - 2rem);
+      margin: 0 1rem 1rem 1rem;
+      border-radius: 2rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-ajouter:hover { background: #0f3b5e; }
+    .panier-sidebar {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: 90%;
+      max-width: 380px;
+      height: 100%;
+      background: white;
+      box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      transition: right 0.3s ease;
+      border-radius: 1rem 0 0 1rem;
+    }
+    .panier-sidebar.open { right: 0; }
+    .panier-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.2rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .btn-fermer { background: none; border: none; font-size: 2rem; cursor: pointer; color: #7f8c8d; }
+    #panier-contenu { flex: 1; overflow-y: auto; padding: 1rem; }
+    .panier-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #edf2f7;
+    }
+    .item-info { flex: 1; }
+    .item-nom { font-weight: 500; }
+    .item-prix { font-size: 0.85rem; color: #2c6e4f; }
+    .item-actions { display: flex; align-items: center; gap: 0.5rem; }
+    .item-actions button {
+      background: #eef2f5;
+      border: none;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .quantite { min-width: 24px; text-align: center; }
+    .panier-footer { padding: 1rem; border-top: 1px solid #e2e8f0; background: white; }
+    .total { font-size: 1.2rem; font-weight: bold; margin-bottom: 1rem; }
+    .btn-whatsapp {
+      background: #25D366;
+      color: white;
+      border: none;
+      padding: 0.8rem;
+      width: 100%;
+      border-radius: 3rem;
+      font-weight: bold;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .btn-whatsapp:hover { background: #128C7E; }
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(2px);
+      z-index: 999;
+      display: none;
+    }
+    .overlay.active { display: block; }
+    .panier-vide { text-align: center; color: #94a3b8; margin-top: 2rem; }
+    @media (max-width: 480px) {
+      .produit-nom { font-size: 1rem; }
+      .produit-prix { font-size: 1.1rem; }
+      .btn-ajouter { padding: 0.6rem; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>✨ Notre catalogue</h1>
+      <div class="panier-icone">
+        <i class="fas fa-shopping-cart"></i>
+        <span id="panier-compteur">0</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div id="liste-produits" class="produits-grid"></div>
+  </main>
+
+  <div id="panier-sidebar" class="panier-sidebar">
+    <div class="panier-header">
+      <h2>Mon panier</h2>
+      <button id="fermer-panier" class="btn-fermer">&times;</button>
+    </div>
+    <div id="panier-contenu"></div>
+    <div class="panier-footer">
+      <div class="total">Total : <span id="total-panier">0</span> FCFA</div>
+      <button id="btn-whatsapp" class="btn-whatsapp">
+        <i class="fab fa-whatsapp"></i> Envoyer sur WhatsApp
+      </button>
+    </div>
+  </div>
+  <div id="overlay" class="overlay"></div>
+
+  <script>
+    // ----- Produits (tels que vous les avez définis, prix en FCFA) -----
+    const produits = [
+      { id: 1, nom: "Robe longue blanche à manche longue", prix: 3900, description: "Robe d'été blanche, idéal pour soirée", image: "photo1.jpeg" },
+      { id: 2, nom: "Robe d'été beige à manche courte", prix: 3000, description: "Robe d'été blanche ample à manche courte, idéal pour sorties", image: "photo2.jpeg" },
+      { id: 3, nom: "Robe d'été fuschia à manche courte", prix: 3000, description: "Robe d'été fuschia à manche courte, parfaite pour sorties détentes", image: "photo3.jpeg" },
+      { id: 4, nom: "Robe longue noir blanc", prix: 2900, description: "Légère et agréable, idéale pour soirées", image: "photo4.jpeg" },
+      { id: 5, nom: "Robe d'été multicolor", prix: 2800, description: "Robe d'été à manche courte, parfaite pour sorties détentes", image: "photo5.jpeg" },
+      { id: 6, nom: "Ensemble 2 pièces noir et blanc", prix: 2800, description: "Idéal pour les grandes occasions", image: "photo6.jpeg" },
+      { id: 7, nom: "Ensemble 2 pièces multicolor", prix: 2800, description: "Le meilleur choix pour les sorties entre amis", image: "photo7.jpeg" },
+      { id: 8, nom: "Ensemble 2 pièce avec robe fleurie beige", prix: 3000, description: "Ensemble 2 pièce avec robe fleurie beige pour les sorties entre amis", image: "photo8.jpeg" },
+      { id: 9, nom: "Complet chic et tendance", prix: 3000, description: "Le meilleur choix pour les grandes occasions", image: "photo9.jpeg" },
+      { id: 10, nom: "Complet orange blanc vert", prix: 3000, description: "Pas besoin de maillot pour être patriote, un chic complet suffit", image: "photo10.jpeg" }
+    ];
+
+    let panier = [];
+
+    // Éléments DOM
+    const produitsContainer = document.getElementById('liste-produits');
+    const panierSidebar = document.getElementById('panier-sidebar');
+    const overlay = document.getElementById('overlay');
+    const panierCompteur = document.getElementById('panier-compteur');
+    const panierContenu = document.getElementById('panier-contenu');
+    const totalSpan = document.getElementById('total-panier');
+    const btnWhatsapp = document.getElementById('btn-whatsapp');
+    const fermerPanierBtn = document.getElementById('fermer-panier');
+    const panierIcone = document.querySelector('.panier-icone');
+
+    // Fonction utilitaire : formater un nombre en FCFA (sans centimes, avec espace comme séparateur)
+    function formatFCFA(nombre) {
+      return nombre.toLocaleString('fr-FR') + ' FCFA';
+    }
+
+    // Affichage des produits
+    function afficherProduits() {
+      produitsContainer.innerHTML = produits.map(produit => `
+        <div class="produit-card" data-id="${produit.id}">
+          <img class="produit-image" src="${produit.image}" alt="${produit.nom}" 
+               onerror="this.src='https://placehold.co/400x400?text=Image+non+trouvée'">
+          <div class="produit-info">
+            <div class="produit-nom">${produit.nom}</div>
+            <div class="produit-description">${produit.description}</div>
+            <div class="produit-prix">${formatFCFA(produit.prix)}</div>
+          </div>
+          <button class="btn-ajouter" data-id="${produit.id}">
+            <i class="fas fa-cart-plus"></i> Ajouter
+          </button>
+        </div>
+      `).join('');
+
+      document.querySelectorAll('.btn-ajouter').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = parseInt(btn.dataset.id);
+          ajouterAuPanier(id);
+        });
+      });
+    }
+
+    // Gestion du panier
+    function sauvegarderPanier() { localStorage.setItem('panier', JSON.stringify(panier)); }
+    function chargerPanier() {
+      const saved = localStorage.getItem('panier');
+      panier = saved ? JSON.parse(saved) : [];
+      mettreAJourAffichagePanier();
+    }
+
+    function ajouterAuPanier(id, quantite = 1) {
+      const index = panier.findIndex(item => item.id === id);
+      if (index !== -1) panier[index].quantite += quantite;
+      else panier.push({ id, quantite });
+      sauvegarderPanier();
+      mettreAJourAffichagePanier();
+      animerIconePanier();
+    }
+
+    function retirerDuPanier(id) {
+      const index = panier.findIndex(item => item.id === id);
+      if (index !== -1) {
+        panier[index].quantite -= 1;
+        if (panier[index].quantite <= 0) panier.splice(index, 1);
+      }
+      sauvegarderPanier();
+      mettreAJourAffichagePanier();
+    }
+
+    function supprimerEntierement(id) {
+      panier = panier.filter(item => item.id !== id);
+      sauvegarderPanier();
+      mettreAJourAffichagePanier();
+    }
+
+    function mettreAJourAffichagePanier() {
+      const totalArticles = panier.reduce((acc, item) => acc + item.quantite, 0);
+      panierCompteur.innerText = totalArticles;
+
+      if (panier.length === 0) {
+        panierContenu.innerHTML = '<div class="panier-vide">🛒 Votre panier est vide</div>';
+        totalSpan.innerText = '0';
+        return;
+      }
+
+      let total = 0;
+      let html = '';
+      for (let item of panier) {
+        const produit = produits.find(p => p.id === item.id);
+        if (!produit) continue;
+        const ligneTotal = produit.prix * item.quantite;
+        total += ligneTotal;
+        html += `
+          <div class="panier-item" data-id="${item.id}">
+            <div class="item-info">
+              <div class="item-nom">${produit.nom}</div>
+              <div class="item-prix">${formatFCFA(produit.prix)} × ${item.quantite}</div>
+            </div>
+            <div class="item-actions">
+              <button class="btn-moins" data-id="${item.id}">-</button>
+              <span class="quantite">${item.quantite}</span>
+              <button class="btn-plus" data-id="${item.id}">+</button>
+              <button class="btn-supprimer" data-id="${item.id}"><i class="fas fa-trash"></i></button>
+            </div>
+          </div>
+        `;
+      }
+      panierContenu.innerHTML = html;
+      totalSpan.innerText = total.toLocaleString('fr-FR');
+
+      // Boutons dynamiques
+      document.querySelectorAll('.btn-moins').forEach(btn => {
+        btn.addEventListener('click', () => retirerDuPanier(parseInt(btn.dataset.id)));
+      });
+      document.querySelectorAll('.btn-plus').forEach(btn => {
+        btn.addEventListener('click', () => ajouterAuPanier(parseInt(btn.dataset.id), 1));
+      });
+      document.querySelectorAll('.btn-supprimer').forEach(btn => {
+        btn.addEventListener('click', () => supprimerEntierement(parseInt(btn.dataset.id)));
+      });
+    }
+
+    function animerIconePanier() {
+      const icone = document.querySelector('.panier-icone i');
+      icone.style.transform = 'scale(1.2)';
+      setTimeout(() => icone.style.transform = '', 200);
+    }
+
+    // Envoi WhatsApp (format FCFA)
+    function envoyerPanierWhatsApp() {
+      if (panier.length === 0) {
+        alert("Votre panier est vide. Ajoutez des produits avant d'envoyer.");
+        return;
+      }
+
+      let message = "🛍️ *Mon panier :*%0a";
+      let total = 0;
+
+      for (let item of panier) {
+        const produit = produits.find(p => p.id === item.id);
+        if (!produit) continue;
+        const sousTotal = produit.prix * item.quantite;
+        total += sousTotal;
+        message += `- ${produit.nom} : ${item.quantite} × ${produit.prix.toLocaleString('fr-FR')} FCFA = ${sousTotal.toLocaleString('fr-FR')} FCFA%0a`;
+      }
+      message += `%0a💰 *Total : ${total.toLocaleString('fr-FR')} FCFA*%0a`;
+      message += `%0a📲 Commande à préparer. Merci !`;
+
+      // Remplacez par le numéro du vendeur (sans le +)
+      const numeroVendeur = "33668823012";
+      window.open(`https://wa.me/${numeroVendeur}?text=${message}`, '_blank');
+    }
+
+    // Ouverture / fermeture panier
+    function ouvrirPanier() { panierSidebar.classList.add('open'); overlay.classList.add('active'); }
+    function fermerPanier() { panierSidebar.classList.remove('open'); overlay.classList.remove('active'); }
+
+    // Événements
+    panierIcone.addEventListener('click', ouvrirPanier);
+    fermerPanierBtn.addEventListener('click', fermerPanier);
+    overlay.addEventListener('click', fermerPanier);
+    btnWhatsapp.addEventListener('click', envoyerPanierWhatsApp);
+
+    // Initialisation
+    chargerPanier();
+    afficherProduits();
+  </script>
+</body>
+</html>
